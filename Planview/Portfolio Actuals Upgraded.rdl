@@ -22,9 +22,6 @@
           <QueryParameter Name="@ParmShellProjects">
             <Value>=Parameters!ParmShellProjects.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@ParmProjectsAllowed">
-            <Value>=Parameters!ParmProjectsAllowed.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@ParmActiveStatus">
             <Value>=Parameters!ParmActiveStatus.Value</Value>
           </QueryParameter>
@@ -41,14 +38,59 @@
             <Value>=Parameters!ParmProjectManager.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'No'
+        <CommandText>IF OBJECT_ID('tempdb..#Svc_Cntrs_Ass') IS NOT NULL DROP TABLE #Svc_Cntrs_Ass
+select * into #Svc_Cntrs_Ass
+from   [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPCFPRJ_Service Centers_AssociationView]
+
+IF OBJECT_ID('tempdb..#Svc_Cntrs') IS NOT NULL DROP TABLE #Svc_Cntrs
+select * into #Svc_Cntrs
+from  [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView]
+
+--------------------------------------------------------------
+
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'Yes'
 	BEGIN
 		SELECT	DISTINCT ProjectName, ProjectUID
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
 				AND	(p.ProjectType IN (0,5,6))
-				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
@@ -56,7 +98,657 @@
 				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
 		ORDER BY ProjectName
 	END
-</CommandText>
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'Yes'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+-- @ParmShellProjects = 'No'
+--------------------------------------------------------------
+--------------------------------------------------------------
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'No'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+-- @ParmShellProjects = 'Only'
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectManager' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ProjectSponsor' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'Program' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCenter' AND @ParmShellProjects = 'Only'
+	BEGIN
+		SELECT	DISTINCT ProjectName, ProjectUID
+		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN #Svc_Cntrs_Ass scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN #Svc_Cntrs scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				AND	(p.ProjectType IN (0,5,6))
+				AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
+		
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
+		ORDER BY ProjectName
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------</CommandText>
       </Query>
       <Fields>
         <Field Name="ProjectName">
@@ -76,9 +768,6 @@
           <QueryParameter Name="@ParmPrimaryFilter">
             <Value>=Parameters!ParmPrimaryFilter.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@ParmProjectsAllowed">
-            <Value>=Parameters!ParmProjectsAllowed.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@ParmActiveStatus">
             <Value>=Parameters!ParmActiveStatus.Value</Value>
           </QueryParameter>
@@ -88,7 +777,7 @@
 		SELECT	DISTINCT ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') AS [FilterChoiceLabel], ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') AS [FilterChoiceValue]
 		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 		ORDER BY 1
 	END
@@ -98,7 +787,7 @@ IF @ParmPrimaryFilter = 'Program'
 		SELECT	DISTINCT p.[Parent Program]  AS [FilterChoiceLabel], p.[Parent Program]  AS [FilterChoiceValue]
 		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 		ORDER BY 1
 	END
@@ -112,7 +801,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter'
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 		ORDER BY 1
 	END
@@ -126,7 +815,7 @@ IF @ParmPrimaryFilter = 'ProjectManager'
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 		ORDER BY 1
 	END</CommandText>
@@ -152,9 +841,6 @@ IF @ParmPrimaryFilter = 'ProjectManager'
           <QueryParameter Name="@ParmSecondaryFilter">
             <Value>=Parameters!ParmSecondaryFilter.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@ParmProjectsAllowed">
-            <Value>=Parameters!ParmProjectsAllowed.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@ParmActiveStatus">
             <Value>=Parameters!ParmActiveStatus.Value</Value>
           </QueryParameter>
@@ -167,7 +853,7 @@ IF @ParmPrimaryFilter = 'ProjectManager'
 		SELECT	DISTINCT p.[Parent Program]  AS [FilterChoiceLabel], p.[Parent Program]  AS [FilterChoiceValue]
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 				--AND p.[Parent Program] &lt;&gt; 'Not in a Program'
@@ -182,7 +868,7 @@ IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ServiceCent
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 	END
@@ -192,7 +878,7 @@ IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectMana
 		SELECT	DISTINCT p.ProjectOwnerName AS [FilterChoiceLabel], p.ProjectOwnerResourceUID AS [FilterChoiceValue]
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 	END
@@ -202,7 +888,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectSponsor'
 		SELECT	DISTINCT ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') AS [FilterChoiceLabel], ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') AS [FilterChoiceValue]
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
@@ -217,7 +903,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ServiceCenter'
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
@@ -228,7 +914,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectManager'
 		SELECT	DISTINCT p.ProjectOwnerName AS [FilterChoiceLabel], p.ProjectOwnerResourceUID AS [FilterChoiceValue]
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
@@ -243,7 +929,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectSpons
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 	END
@@ -257,7 +943,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'Program'
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 	END
@@ -271,7 +957,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectManag
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 	END
@@ -281,7 +967,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ProjectSpon
 		SELECT	DISTINCT ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') AS [FilterChoiceLabel], ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') AS [FilterChoiceValue]
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
 	END
@@ -291,7 +977,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'Program'
 		SELECT	DISTINCT p.[Parent Program]  AS [FilterChoiceLabel], p.[Parent Program]  AS [FilterChoiceValue]
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
 	END
@@ -305,7 +991,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
 	END</CommandText>
@@ -341,15 +1027,175 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
             <Value>=Parameters!ParmActiveStatus.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectManager'
+        <CommandText>IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'Program'
 	BEGIN
 		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
-		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+	END
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ServiceCenter'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPCFPRJ_Service Centers_AssociationView] scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+	END
+
+IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectManager'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
 				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectSponsor'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+	END
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ServiceCenter'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPCFPRJ_Service Centers_AssociationView] scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+	END
+
+IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectManager'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectSponsor'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPCFPRJ_Service Centers_AssociationView] scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+	END
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'Program'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPCFPRJ_Service Centers_AssociationView] scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+	END
+
+IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectManager'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPCFPRJ_Service Centers_AssociationView] scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
+				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
+	END
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ProjectSponsor'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
+	END
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'Program'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
+					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
+	END
+
+IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCenter'
+	BEGIN
+		SELECT	DISTINCT ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') AS BusinessOwner
+		FROM	PerviewDataMart.dbo.dim_project p WITH (NOLOCK)
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPCFPRJ_Service Centers_AssociationView] scav
+					ON p.ProjectUID = scav.EntityUID
+				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
+					ON scav.LookupMemberUID = scuv.LookupMemberUID
+		WHERE	1=1
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
+				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
+				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
+				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
 	END</CommandText>
       </Query>
       <Fields>
@@ -369,9 +1215,6 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
           <QueryParameter Name="@ParmSecondaryFilter">
             <Value>=Parameters!ParmSecondaryFilter.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@ParmProjectsAllowed">
-            <Value>=Parameters!ParmProjectsAllowed.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@ParmPrimaryFilterChoice">
             <Value>=Parameters!ParmPrimaryFilterChoice.Value</Value>
           </QueryParameter>
@@ -390,7 +1233,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
 		SELECT	DISTINCT p.ProjectOwnerName, p.ProjectOwnerResourceUID
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
 				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
@@ -407,7 +1250,7 @@ IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ServiceCent
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
@@ -419,7 +1262,7 @@ IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectMana
 		SELECT	DISTINCT p.ProjectOwnerName, p.ProjectOwnerResourceUID
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
@@ -434,7 +1277,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectSponsor'
 		SELECT	DISTINCT p.ProjectOwnerName, p.ProjectOwnerResourceUID
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
@@ -451,7 +1294,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ServiceCenter'
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
@@ -464,7 +1307,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectManager'
 		SELECT	DISTINCT p.ProjectOwnerName, p.ProjectOwnerResourceUID
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND ((p.ProjectName IN (@ParmPrimaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
@@ -484,7 +1327,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectSpons
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
@@ -500,7 +1343,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'Program'
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
@@ -517,7 +1360,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectManag
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
@@ -532,7 +1375,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ProjectSpon
 		SELECT	DISTINCT p.ProjectOwnerName, p.ProjectOwnerResourceUID
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
@@ -544,7 +1387,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'Program'
 		SELECT	DISTINCT p.ProjectOwnerName, p.ProjectOwnerResourceUID
 		FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
 				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
@@ -561,7 +1404,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
 				LEFT JOIN [XRPSWPDBSSPP01.HCA.CORPAD.NET].ProjectWebApp.dbo.[MSPLT_Service Center_UserView] scuv
 					ON scav.LookupMemberUID = scuv.LookupMemberUID
 		WHERE	1=1
-				AND p.ProjectUID IN (@ParmProjectsAllowed)
+				--AND p.ProjectUID IN (@ParmProjectsAllowed)
 				AND (ISNULL(p.[Project Active Status], N'&lt;N/A&gt;') IN (@ParmActiveStatus))
 				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
@@ -3090,7 +3933,7 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                       <TablixCell>
                                         <CellContents>
                                           <Subreport Name="PortfolioActualsSummary">
-                                            <ReportName>Portfolio Actuals Summary</ReportName>
+                                            <ReportName>Portfolio Actuals Summary Upgraded</ReportName>
                                             <Parameters>
                                               <Parameter Name="UserID">
                                                 <Value>=Parameters!UserID.Value</Value>

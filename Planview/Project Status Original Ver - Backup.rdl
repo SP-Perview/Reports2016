@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="PerViewDataMart">
@@ -4293,9 +4293,6 @@ WHERE	r.ResourceNTAccount = @UserID
                               <StateDataElementName />
                               <rd:IconsSet>ThreeUnrimmedTrafficLights</rd:IconsSet>
                               <Style>
-                                <Border>
-                                  <Style>Solid</Style>
-                                </Border>
                                 <ShadowOffset>2pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -4664,9 +4661,6 @@ WHERE	r.ResourceNTAccount = @UserID
                               <StateDataElementName />
                               <rd:IconsSet>ThreeSigns</rd:IconsSet>
                               <Style>
-                                <Border>
-                                  <Style>Solid</Style>
-                                </Border>
                                 <ShadowOffset>2pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -4890,9 +4884,6 @@ WHERE	r.ResourceNTAccount = @UserID
                               <StateDataElementName />
                               <rd:IconsSet>ThreeSigns</rd:IconsSet>
                               <Style>
-                                <Border>
-                                  <Style>Solid</Style>
-                                </Border>
                                 <ShadowOffset>2pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -5117,9 +5108,6 @@ WHERE	r.ResourceNTAccount = @UserID
                               <StateDataElementName />
                               <rd:IconsSet>ThreeSigns</rd:IconsSet>
                               <Style>
-                                <Border>
-                                  <Style>Solid</Style>
-                                </Border>
                                 <ShadowOffset>2pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -5350,9 +5338,6 @@ WHERE	r.ResourceNTAccount = @UserID
                               <StateDataElementName />
                               <rd:IconsSet>ThreeSigns</rd:IconsSet>
                               <Style>
-                                <Border>
-                                  <Style>Solid</Style>
-                                </Border>
                                 <ShadowOffset>2pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -5591,9 +5576,6 @@ WHERE	r.ResourceNTAccount = @UserID
                               <StateDataElementName />
                               <rd:IconsSet>ThreeSigns</rd:IconsSet>
                               <Style>
-                                <Border>
-                                  <Style>Solid</Style>
-                                </Border>
                                 <ShadowOffset>2pt</ShadowOffset>
                               </Style>
                               <Top>4</Top>
@@ -8213,144 +8195,6 @@ WHERE	r.ResourceNTAccount = @UserID
       </ValidValues>
     </ReportParameter>
   </ReportParameters>
-  <ReportParametersLayout>
-    <GridLayoutDefinition>
-      <NumberOfColumns>3</NumberOfColumns>
-      <NumberOfRows>13</NumberOfRows>
-      <CellDefinitions>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>UserID</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>ParmProject</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>ParmProjectsAllowed</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>ParmActiveStatus</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>ParmProjectManager</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>2</RowIndex>
-          <ParameterName>ParmShellProjects</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>2</RowIndex>
-          <ParameterName>ParmProjectName</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>3</RowIndex>
-          <ParameterName>ParmReportingStart</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>3</RowIndex>
-          <ParameterName>ParmReportingFinish</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>4</RowIndex>
-          <ParameterName>ParmBaselineNonBaseline</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>4</RowIndex>
-          <ParameterName>UpcomingPeriod</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>5</RowIndex>
-          <ParameterName>DisplayIssuesRisks</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>5</RowIndex>
-          <ParameterName>ParmDisplayItemsDecisions</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>6</RowIndex>
-          <ParameterName>ParmOverdueKeyTasks</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>6</RowIndex>
-          <ParameterName>ParmDeliverables</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>7</RowIndex>
-          <ParameterName>ParmAccomplishments</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>7</RowIndex>
-          <ParameterName>ParmUpcomingKeyTasks</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>8</RowIndex>
-          <ParameterName>ParmTaskComments</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>8</RowIndex>
-          <ParameterName>ParmDisplayProjectDescription</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>9</RowIndex>
-          <ParameterName>DisplayPMNotes</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>9</RowIndex>
-          <ParameterName>DisplaySchdCom</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>10</RowIndex>
-          <ParameterName>DisplayDelivCom</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>10</RowIndex>
-          <ParameterName>DisplayMilesCom</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>11</RowIndex>
-          <ParameterName>DisplayProjectOutcomesExpected</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>11</RowIndex>
-          <ParameterName>ParmLogo</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>12</RowIndex>
-          <ParameterName>ParmConfidential</ParameterName>
-        </CellDefinition>
-      </CellDefinitions>
-    </GridLayoutDefinition>
-  </ReportParametersLayout>
   <EmbeddedImages>
     <EmbeddedImage Name="PerView_logo_small_154x29">
       <MIMEType>image/jpeg</MIMEType>

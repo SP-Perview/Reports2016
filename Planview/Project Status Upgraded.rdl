@@ -6359,7 +6359,7 @@ WHERE	r.ResourceNTAccount = @UserID	</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Project Status Report Yo</Value>
+                      <Value>Project Status Report</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>12pt</FontSize>
@@ -6673,22 +6673,22 @@ WHERE	r.ResourceNTAccount = @UserID	</CommandText>
     </ReportParameter>
     <ReportParameter Name="ParmProject">
       <DataType>String</DataType>
-      <DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>URLProjectName</Prompt>
+      <ValidValues>
         <DataSetReference>
           <DataSetName>dsProjects</DataSetName>
           <ValueField>Value</ValueField>
+          <LabelField>ProjectName</LabelField>
         </DataSetReference>
-      </DefaultValue>
-      <AllowBlank>true</AllowBlank>
-      <Prompt>URLProjectName</Prompt>
+      </ValidValues>
     </ReportParameter>
     <ReportParameter Name="ParmActiveStatus">
       <DataType>String</DataType>
       <DefaultValue>
-        <DataSetReference>
-          <DataSetName>prmActiveStatus</DataSetName>
-          <ValueField>ProjectActiveStatus</ValueField>
-        </DataSetReference>
+        <Values>
+          <Value>In Progress</Value>
+        </Values>
       </DefaultValue>
       <Prompt>Project Status:</Prompt>
       <ValidValues>
