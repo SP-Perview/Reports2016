@@ -66,8 +66,8 @@
     <Report Include="Program Status Upgraded.rdl" />
     <Report Include="Project Status - Packet.rdl" />
     <Report Include="Project Status For Packet Upgraded.rdl" />
-    <Report Include="Project Status Original Ver.rdl" />
     <Report Include="Project Status Upgraded.rdl" />
+    <Report Include="Project Status_UpgradedJGGG.rdl" />
     <Report Include="Resource Planning.rdl" />
     <Report Include="Upgraded Portfolio Status (Client - HCA).rdl" />
   </ItemGroup>

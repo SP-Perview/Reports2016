@@ -19,9 +19,6 @@
           <QueryParameter Name="@ParmShellProjects">
             <Value>=Parameters!ParmShellProjects.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@ParmProjectsAllowed">
-            <Value>=Parameters!ParmProjectsAllowed.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@ParmActiveStatus">
             <Value>=Parameters!ParmActiveStatus.Value</Value>
           </QueryParameter>
@@ -35,11 +32,11 @@
 			SELECT	DISTINCT
 					p.ProjectName
 				  , p.ProjectUID AS Value
-			FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView AS p WITH (NOLOCK)
+			FROM	PerViewDataMart.dbo.dim_project AS p WITH (NOLOCK)
 			WHERE	1=1
 					AND (p.ProjectType IN (0,5,6))
 					AND (ISNULL(p.[Shell Project Flag],'No') = 'No')
-					AND p.ProjectUID IN (@ParmProjectsAllowed)
+				-- AND p.ProjectUID IN (@ParmProjectsAllowed)
 					AND (ISNULL(p.[Project Active Status], '&lt;N/A&gt;') IN (@ParmActiveStatus))
 					AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
 			ORDER BY ProjectName
@@ -47,10 +44,10 @@
 			SELECT	DISTINCT
 					p.ProjectName
 				  , p.ProjectUID AS Value
-			FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView AS p WITH (NOLOCK)
+			FROM	PerViewDataMart.dbo.dim_project AS p WITH (NOLOCK)
 			WHERE	1=1
 					AND (p.ProjectType IN (0,5,6))
-					AND p.ProjectUID IN (@ParmProjectsAllowed)
+				-- AND p.ProjectUID IN (@ParmProjectsAllowed)
 					AND (ISNULL(p.[Project Active Status], '&lt;N/A&gt;') IN (@ParmActiveStatus))
 					AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
 			ORDER BY ProjectName
@@ -58,11 +55,11 @@
 			SELECT	DISTINCT
 					p.ProjectName
 				  , p.ProjectUID AS Value
-			FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView AS p WITH (NOLOCK)
+			FROM	PerViewDataMart.dbo.dim_project AS p WITH (NOLOCK)
 			WHERE	1=1
 					AND (p.ProjectType IN (0,5,6))
 					AND (ISNULL(p.[Shell Project Flag],'No') = 'Yes')
-					AND p.ProjectUID IN (@ParmProjectsAllowed)
+				-- AND p.ProjectUID IN (@ParmProjectsAllowed)
 					AND (ISNULL(p.[Project Active Status], '&lt;N/A&gt;') IN (@ParmActiveStatus))
 					AND (p.ProjectOwnerResourceUID IN (@ParmProjectManager))
 			ORDER BY ProjectName
@@ -71,10 +68,10 @@ ELSE
 	SELECT	DISTINCT 
 			p.ProjectName
 		  , p.ProjectUID AS Value
-	FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView AS p WITH (NOLOCK)
+	FROM	PerViewDataMart.dbo.dim_project AS p WITH (NOLOCK)
 	WHERE	1=1
 			AND (p.ProjectType IN (0,5,6))
-			AND p.ProjectUID IN (@ParmProjectsAllowed)
+		-- AND p.ProjectUID IN (@ParmProjectsAllowed)
 			AND p.ProjectUID = @ParmProject
 	ORDER BY ProjectName</CommandText>
       </Query>
@@ -92,26 +89,17 @@ ELSE
     <DataSet Name="dsUpcomingPeriods">
       <Query>
         <DataSourceName>PerViewDataMart</DataSourceName>
-        <CommandText>
-          SELECT [MemberValue] AS Period,
-          CASE
-          WHEN [MemberValue]= '15 Days' THEN 15
-          WHEN [MemberValue]= '30 Days' THEN 30
-          WHEN [MemberValue]= '45 Days' THEN 45
-          WHEN [MemberValue]= '60 Days' THEN 60
-          WHEN [MemberValue]= '90 Days' THEN 90
-          WHEN [MemberValue]= 'All Days' THEN 365
-          ELSE 15
-          END AS [MemberValue]
-          FROM ProjectWebApp.dbo.[MSPLT_Upcoming Period_UserView] WITH (NOLOCK)
-          WHERE  [MemberValue] IS NOT NULL
-          ORDER BY [MemberValue]
-        </CommandText>
+        <CommandText>		  select '15 Days' as Period, '15' as MemberValue union all
+		  select '30 Days' as Period, '30' as MemberValue union all
+		  select '45 Days' as Period, '45' as MemberValue union all
+		  select '60 Days' as Period, '60' as MemberValue union all
+		  select '90 Days' as Period, '90' as MemberValue union all
+		  select 'All Days' as Period, '365' as MemberValue</CommandText>
       </Query>
       <Fields>
         <Field Name="MemberValue">
           <DataField>MemberValue</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Period">
           <DataField>Period</DataField>
@@ -140,7 +128,7 @@ ELSE
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>uspReportsKeyTasks_ProjectStatus_PS</CommandText>
+        <CommandText>uspReportsKeyTasks_ProjectStatus_PS_Staging</CommandText>
       </Query>
       <Fields>
         <Field Name="ProjectUID">
@@ -165,7 +153,7 @@ ELSE
         </Field>
         <Field Name="TaskPercentCompleted">
           <DataField>TaskPercentCompleted</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="TaskBaselineFinish">
           <DataField>TaskBaselineFinish</DataField>
@@ -189,7 +177,7 @@ ELSE
         </Field>
         <Field Name="TaskIsMilestone">
           <DataField>TaskIsMilestone</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="TaskDeliverableStartDate">
           <DataField>TaskDeliverableStartDate</DataField>
@@ -234,6 +222,10 @@ ELSE
         <Field Name="UpcomingTaskFlag">
           <DataField>UpcomingTaskFlag</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="OrderBy">
+          <DataField>OrderBy</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>

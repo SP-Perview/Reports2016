@@ -133,7 +133,7 @@
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>uspReportsPortfolioStatus(Client-HCA)_new2</CommandText>
+        <CommandText>uspReportsPortfolioStatus(Client-HCA)_Staging</CommandText>
       </Query>
       <Fields>
         <Field Name="Row_">
@@ -1800,6 +1800,7 @@
                             <PaddingTop>3pt</PaddingTop>
                           </Style>
                         </Image>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -2670,7 +2671,7 @@
                                 <TablixMember />
                               </TablixMembers>
                               <Visibility>
-                                <Hidden>= Fields!epm_platform.Value = "PerView" and Fields!TaskUID.Value&lt;&gt;Fields!TaskParentUID.Value and Parameters!ParmDisplayUpcomingActivities.Value="No"</Hidden>
+                                <Hidden>= Fields!TaskUID.Value&lt;&gt;Fields!TaskParentUID.Value and Parameters!ParmDisplayUpcomingActivities.Value="No"</Hidden>
                               </Visibility>
                             </TablixMember>
                           </TablixMembers>
