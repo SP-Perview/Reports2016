@@ -1444,17 +1444,28 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
           <QueryParameter Name="@ParmReportFinishDate">
             <Value>=Parameters!ParmReportFinishDate.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@ParmIncludePlanview">
+            <Value>=Parameters!ParmIncludePlanview.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>uspReportsPortfolioActuals</CommandText>
+        <CommandText>uspReportsPortfolioActuals_Staging</CommandText>
       </Query>
       <Fields>
+        <Field Name="Row_">
+          <DataField>Row#</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
         <Field Name="ProjectUID">
           <DataField>ProjectUID</DataField>
           <rd:TypeName>System.Guid</rd:TypeName>
         </Field>
         <Field Name="ProjectName">
           <DataField>ProjectName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="puid">
+          <DataField>puid</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="IsProgramProject">
@@ -1469,13 +1480,25 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
           <DataField>Business Owner</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="epm_platform">
+          <DataField>epm_platform</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="Project_Sponsor">
           <DataField>Project Sponsor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="relatedProj">
+          <DataField>relatedProj</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Project_Client">
           <DataField>Project Client</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="sortOrder">
+          <DataField>sortOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="Executive_Status_Summary">
           <DataField>Executive Status Summary</DataField>
@@ -1857,7 +1880,7 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                                 <Color>LightGrey</Color>
                                                 <Style>Solid</Style>
                                               </Border>
-                                              <BackgroundColor>LightSteelBlue</BackgroundColor>
+                                              <BackgroundColor>Tan</BackgroundColor>
                                               <VerticalAlign>Middle</VerticalAlign>
                                               <PaddingLeft>2pt</PaddingLeft>
                                               <PaddingRight>2pt</PaddingRight>
@@ -2504,10 +2527,12 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                               <Paragraph>
                                                 <TextRuns>
                                                   <TextRun>
-                                                    <Value>=Fields!ProjectName.Value</Value>
+                                                    <Value>=iif(Fields!sortOrder.Value = 2, "Planview ---  " + Fields!ProjectName.Value , Fields!ProjectName.Value)</Value>
                                                     <Style>
+                                                      <FontStyle>=iif(Fields!sortOrder.Value = 2, "Italic" , "Default")</FontStyle>
                                                       <FontFamily>Calibri</FontFamily>
                                                       <FontSize>7pt</FontSize>
+                                                      <Color>=iif(Fields!sortOrder.Value = 2,"DarkBlue","Black" )</Color>
                                                     </Style>
                                                   </TextRun>
                                                 </TextRuns>
@@ -3724,6 +3749,9 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                         <Value>=Fields!IsProgramProject.Value</Value>
                                       </SortExpression>
                                       <SortExpression>
+                                        <Value>=Fields!sortOrder.Value</Value>
+                                      </SortExpression>
+                                      <SortExpression>
                                         <Value>=Fields!Business_Owner.Value</Value>
                                       </SortExpression>
                                       <SortExpression>
@@ -3764,6 +3792,9 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                           </SortExpression>
                                           <SortExpression>
                                             <Value>=Fields!IsProgramProject.Value</Value>
+                                          </SortExpression>
+                                          <SortExpression>
+                                            <Value>=Fields!sortOrder.Value</Value>
                                           </SortExpression>
                                           <SortExpression>
                                             <Value>=Fields!Business_Owner.Value</Value>
@@ -3901,7 +3932,7 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                                 <Color>LightGrey</Color>
                                                 <Style>Solid</Style>
                                               </Border>
-                                              <BackgroundColor>MidnightBlue</BackgroundColor>
+                                              <BackgroundColor>Tan</BackgroundColor>
                                               <VerticalAlign>Middle</VerticalAlign>
                                               <PaddingLeft>2pt</PaddingLeft>
                                               <PaddingRight>2pt</PaddingRight>
@@ -5007,6 +5038,27 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
         </ParameterValues>
       </ValidValues>
     </ReportParameter>
+    <ReportParameter Name="ParmIncludePlanview">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>No</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Include PlanView Projects</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>Yes</Value>
+            <Label>Yes</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>No</Value>
+            <Label>No</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -5112,6 +5164,11 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>8</RowIndex>
           <ParameterName>ParmConfidential</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>8</RowIndex>
+          <ParameterName>ParmIncludePlanview</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
