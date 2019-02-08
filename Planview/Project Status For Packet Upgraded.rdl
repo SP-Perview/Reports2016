@@ -168,7 +168,7 @@
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>uspReportsProjectStatus_PS</CommandText>
+        <CommandText>uspReportsProjectStatus_PS_Staging</CommandText>
       </Query>
       <Fields>
         <Field Name="ProjectUID">

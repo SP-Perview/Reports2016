@@ -1239,6 +1239,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
 				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ServiceCenter'
@@ -1255,6 +1256,7 @@ IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ServiceCent
 				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectManager'
@@ -1267,6 +1269,7 @@ IF @ParmPrimaryFilter = 'ProjectSponsor' AND @ParmSecondaryFilter = 'ProjectMana
 				AND (ISNULL(p.[Project Sponsor], N'&lt;NA&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 --------------------------------------------------------------
@@ -1283,6 +1286,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectSponsor'
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ServiceCenter'
@@ -1300,6 +1304,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ServiceCenter'
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectManager'
@@ -1313,6 +1318,7 @@ IF @ParmPrimaryFilter = 'Program' AND @ParmSecondaryFilter = 'ProjectManager'
 					OR (p.[Parent Program] IN (@ParmPrimaryFilterChoice)))
 				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 --------------------------------------------------------------
@@ -1332,6 +1338,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectSpons
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'Program'
@@ -1349,6 +1356,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'Program'
 				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 		END
 
 IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectManager'
@@ -1365,6 +1373,7 @@ IF @ParmPrimaryFilter = 'ServiceCenter' AND @ParmSecondaryFilter = 'ProjectManag
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmPrimaryFilterChoice))
 				AND (p.ProjectOwnerResourceUID IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 --------------------------------------------------------------
@@ -1380,6 +1389,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ProjectSpon
 				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
 				AND (ISNULL(p.[Project Sponsor], N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END
 
 IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'Program'
@@ -1393,6 +1403,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'Program'
 				AND ((p.ProjectName IN (@ParmSecondaryFilterChoice))
 					OR (p.[Parent Program] IN (@ParmSecondaryFilterChoice)))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 		END
 
 IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCenter'
@@ -1409,6 +1420,7 @@ IF @ParmPrimaryFilter = 'ProjectManager' AND @ParmSecondaryFilter = 'ServiceCent
 				AND (p.ProjectOwnerResourceUID IN (@ParmPrimaryFilterChoice))
 				AND (ISNULL(scuv.MemberValue, N'&lt;N/A&gt;') IN (@ParmSecondaryFilterChoice))
 				AND (ISNULL(p.[Business Owner], N'&lt;No Business Owner&gt;') IN (@ParmBusinessOwner))
+				order by  p.ProjectOwnerName 
 	END</CommandText>
       </Query>
       <Fields>
@@ -1875,6 +1887,9 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                               </Paragraph>
                                             </Paragraphs>
                                             <rd:DefaultName>Project_Sponsor</rd:DefaultName>
+                                            <Visibility>
+                                              <Hidden>= IsNothing(Fields!relatedProj.Value)</Hidden>
+                                            </Visibility>
                                             <Style>
                                               <Border>
                                                 <Color>LightGrey</Color>
@@ -3765,6 +3780,9 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                         <KeepTogether>true</KeepTogether>
                                       </TablixMember>
                                       <TablixMember>
+                                        <Visibility>
+                                          <Hidden>= IsNothing(Fields!relatedProj.Value)</Hidden>
+                                        </Visibility>
                                         <KeepWithGroup>After</KeepWithGroup>
                                         <RepeatOnNewPage>true</RepeatOnNewPage>
                                         <KeepTogether>true</KeepTogether>
@@ -3791,10 +3809,13 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
     )</Value>
                                           </SortExpression>
                                           <SortExpression>
-                                            <Value>=Fields!IsProgramProject.Value</Value>
+                                            <Value>=Fields!relatedProj.Value</Value>
                                           </SortExpression>
                                           <SortExpression>
                                             <Value>=Fields!sortOrder.Value</Value>
+                                          </SortExpression>
+                                          <SortExpression>
+                                            <Value>=Fields!IsProgramProject.Value</Value>
                                           </SortExpression>
                                           <SortExpression>
                                             <Value>=Fields!Business_Owner.Value</Value>
@@ -3804,7 +3825,11 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                           </SortExpression>
                                         </SortExpressions>
                                         <TablixMembers>
-                                          <TablixMember />
+                                          <TablixMember>
+                                            <Visibility>
+                                              <Hidden>=IsNothing(Fields!relatedProj.Value)</Hidden>
+                                            </Visibility>
+                                          </TablixMember>
                                           <TablixMember>
                                             <Visibility>
                                               <Hidden>=IIF(Parameters!ParmShowCommentaryNotes.Value = "Yes",true,false)</Hidden>
@@ -3812,12 +3837,13 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                           </TablixMember>
                                           <TablixMember>
                                             <Visibility>
-                                              <Hidden>=IIF(Parameters!ParmShowCommentaryNotes.Value = "No",true,false)</Hidden>
+                                              <Hidden>=IsNothing(Fields!relatedProj.Value)</Hidden>
                                             </Visibility>
                                           </TablixMember>
                                           <TablixMember>
                                             <Visibility>
-                                              <Hidden>=IIF(Parameters!ParmShowCommentaryNotes.Value = "No",true,false)</Hidden>
+                                              <Hidden>=IIF(Parameters!ParmShowCommentaryNotes.Value = "No",true,false) 
+or  IsNothing(Fields!relatedProj.Value)</Hidden>
                                             </Visibility>
                                           </TablixMember>
                                           <TablixMember>
@@ -3927,6 +3953,9 @@ ELSE IF @ParmSecondaryFilter = 'ServiceCenter'
                                               </Paragraph>
                                             </Paragraphs>
                                             <rd:DefaultName>Project_Sponsor</rd:DefaultName>
+                                            <Visibility>
+                                              <Hidden>= IsNothing(Fields!relatedProj.Value)</Hidden>
+                                            </Visibility>
                                             <Style>
                                               <Border>
                                                 <Color>LightGrey</Color>

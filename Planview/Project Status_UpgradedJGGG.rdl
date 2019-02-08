@@ -244,7 +244,7 @@ ELSE
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>uspReportsProjectStatus_PS</CommandText>
+        <CommandText>uspReportsProjectStatus_PS_Staging</CommandText>
       </Query>
       <Fields>
         <Field Name="ProjectUID">
@@ -309,10 +309,6 @@ ELSE
         </Field>
         <Field Name="Work">
           <DataField>Work</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Remaining_Work">
-          <DataField>Remaining Work</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Baseline_Work">
@@ -496,7 +492,7 @@ ELSE
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>uspReportsProjectStatus_ActionItemsDecisions_copyofBrokenSP</CommandText>
+        <CommandText>uspReportsProjectStatus_ActionItemsDecisions_Staging</CommandText>
       </Query>
       <Fields>
         <Field Name="ProjectUID">
@@ -548,9 +544,6 @@ ELSE
           <QueryParameter Name="@ParmProject">
             <Value>=Parameters!ParmProject.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@ParmProjectsAllowed">
-            <Value>=Parameters!ParmProjectsAllowed.Value</Value>
-          </QueryParameter>
         </QueryParameters>
         <CommandText>IF @ParmProject IS NULL OR @ParmProject = ''
 	SELECT	NULL AS ProjectName
@@ -559,10 +552,10 @@ ELSE
 	SELECT	DISTINCT 
 			p.ProjectName
 		  , p.ProjectUID AS Value
-	FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView AS p WITH (NOLOCK)
+	FROM	PerViewDataMart.dbo.dim_project AS p WITH (NOLOCK)
 	WHERE	1=1
 			AND (p.ProjectType IN (0,5,6))
-			AND p.ProjectUID IN (@ParmProjectsAllowed)
+			--AND p.ProjectUID IN (@ParmProjectsAllowed)
 			AND p.ProjectUID = @ParmProject
 	ORDER BY ProjectName</CommandText>
       </Query>
@@ -590,15 +583,15 @@ ELSE
         </QueryParameters>
         <CommandText>IF @ParmProject IS NULL OR @ParmProject = ''
 	SELECT	DISTINCT ISNULL(p.[Project Active Status], '&lt;N/A&gt;') AS ProjectActiveStatus
-	FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView p WITH (NOLOCK)
+	FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 	WHERE	1=1
 			AND p.ProjectUID IN (@ParmProjectsAllowed)
 	ORDER BY [ProjectActiveStatus]
 ELSE
 	SELECT	DISTINCT ISNULL(p.[Project Active Status], '&lt;N/A&gt;') AS ProjectActiveStatus
-	FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView p WITH (NOLOCK)
+	FROM	PerViewDataMart.dbo.dim_project p WITH (NOLOCK)
 	WHERE	1=1
-			AND p.ProjectUID IN (@ParmProjectsAllowed)
+			--AND p.ProjectUID IN (@ParmProjectsAllowed)
 			AND p.ProjectUID = @ParmProject
 	ORDER BY [ProjectActiveStatus]</CommandText>
       </Query>
@@ -616,27 +609,24 @@ ELSE
           <QueryParameter Name="@ParmProject">
             <Value>=Parameters!ParmProject.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@ParmProjectsAllowed">
-            <Value>=Parameters!ParmProjectsAllowed.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@ParmActiveStatus">
             <Value>=Parameters!ParmActiveStatus.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandText>IF @ParmProject IS NULL OR @ParmProject = ''
 	SELECT	DISTINCT p.ProjectOwnername, p.ProjectOwnerResourceUID
-	FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView AS p WITH (NOLOCK)
+	FROM	PerviewDataMart.dbo.dim_project AS p WITH (NOLOCK)
 	WHERE	1=1
 			AND (p.ProjectType IN (0,5,6))
-			AND p.ProjectUID IN (@ParmProjectsAllowed)
+			--AND p.ProjectUID IN (@ParmProjectsAllowed)
 			AND (ISNULL(p.[Project Active Status], '&lt;N/A&gt;') IN (@ParmActiveStatus))
 	ORDER BY 1
 ELSE
 	SELECT	p.ProjectOwnername, p.ProjectOwnerResourceUID
-	FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView AS p WITH (NOLOCK)
+	FROM	PerviewDataMart.dbo.dim_project AS p WITH (NOLOCK)
 	WHERE	1=1
 			AND (p.ProjectType IN (0,5,6))
-			AND p.ProjectUID IN (@ParmProjectsAllowed)
+			--AND p.ProjectUID IN (@ParmProjectsAllowed)
 			AND (ISNULL(p.[Project Active Status], '&lt;N/A&gt;') IN (@ParmActiveStatus))
 			AND p.ProjectUID = @ParmProject
 	ORDER BY 1</CommandText>
@@ -659,9 +649,6 @@ ELSE
           <QueryParameter Name="@ParmProject">
             <Value>=Parameters!ParmProject.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@ParmProjectsAllowed">
-            <Value>=Parameters!ParmProjectsAllowed.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@ParmActiveStatus">
             <Value>=Parameters!ParmActiveStatus.Value</Value>
           </QueryParameter>
@@ -671,10 +658,10 @@ ELSE
 		  , NULL AS ProjectOwnerResourceUID
 ELSE
 	SELECT	p.ProjectOwnername, p.ProjectOwnerResourceUID
-	FROM	ProjectWebApp.dbo.MSP_EpmProject_UserView AS p WITH (NOLOCK)
+	FROM	PerviewDataMart.dbo.dim_project AS p WITH (NOLOCK)
 	WHERE	1=1
 			AND (p.ProjectType IN (0,5,6))
-			AND p.ProjectUID IN (@ParmProjectsAllowed)
+			--AND p.ProjectUID IN (@ParmProjectsAllowed)
 			AND (ISNULL(p.[Project Active Status], '&lt;N/A&gt;') IN (@ParmActiveStatus))
 			AND p.ProjectUID = @ParmProject
 	ORDER BY 1</CommandText>
@@ -699,9 +686,8 @@ ELSE
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT	r.ResourceName	
-FROM	PerViewDataMart.dbo.Resources_UserView r WITH (NOLOCK)	
-WHERE	r.ResourceNTAccount = @UserID	
-</CommandText>
+FROM	PerViewDataMart.dbo.dim_resources r WITH (NOLOCK)	
+WHERE	r.ResourceNTAccount = @UserID	</CommandText>
       </Query>
       <Fields>
         <Field Name="ResourceName">
@@ -1904,7 +1890,7 @@ WHERE	r.ResourceNTAccount = @UserID
                             <RightBorder>
                               <Style>None</Style>
                             </RightBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2374,7 +2360,7 @@ WHERE	r.ResourceNTAccount = @UserID
                             <RightBorder>
                               <Style>None</Style>
                             </RightBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2764,7 +2750,7 @@ WHERE	r.ResourceNTAccount = @UserID
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2887,7 +2873,7 @@ WHERE	r.ResourceNTAccount = @UserID
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3008,7 +2994,7 @@ WHERE	r.ResourceNTAccount = @UserID
                             <TopBorder>
                               <Style>Solid</Style>
                             </TopBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3131,7 +3117,7 @@ WHERE	r.ResourceNTAccount = @UserID
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3254,13 +3240,14 @@ WHERE	r.ResourceNTAccount = @UserID
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -3376,7 +3363,7 @@ WHERE	r.ResourceNTAccount = @UserID
                 <Style>Solid</Style>
                 <Width>1.25pt</Width>
               </TopBorder>
-              <BackgroundColor>#d6ebff</BackgroundColor>
+              <BackgroundColor>Tan</BackgroundColor>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -3426,7 +3413,7 @@ WHERE	r.ResourceNTAccount = @UserID
                               <Style>Solid</Style>
                               <Width>1.25pt</Width>
                             </TopBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -4415,7 +4402,7 @@ WHERE	r.ResourceNTAccount = @UserID
                               <Style>Solid</Style>
                               <Width>1.25pt</Width>
                             </TopBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -6544,7 +6531,7 @@ WHERE	r.ResourceNTAccount = @UserID
                             <RightBorder>
                               <Style>None</Style>
                             </RightBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -6931,7 +6918,7 @@ WHERE	r.ResourceNTAccount = @UserID
                             <RightBorder>
                               <Style>None</Style>
                             </RightBorder>
-                            <BackgroundColor>#d6ebff</BackgroundColor>
+                            <BackgroundColor>Tan</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
