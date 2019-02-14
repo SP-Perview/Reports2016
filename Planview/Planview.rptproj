@@ -70,6 +70,7 @@
     <Report Include="Project Status For Packet Upgraded.rdl" />
     <Report Include="Project Status Upgraded.rdl" />
     <Report Include="Project Status_UpgradedJGGG.rdl" />
+    <Report Include="Report1.rdl" />
     <Report Include="Resource Planning.rdl" />
     <Report Include="Upgraded Portfolio Status (Client - HCA).rdl" />
   </ItemGroup>
